@@ -6,6 +6,7 @@ import connectDB from './config/db.js';
 import { initializeDatabases } from './config/redisClient.js';
 // Routers
 import userAuthRoutes from './routes/userAuth.js';
+import problemRoutes from './routes/problem.js';
 
 const app = express();
 
@@ -26,5 +27,6 @@ app.get("/", (req, res) => {
 
 // Routers
 app.use("/api/users", userAuthRoutes);
+app.use("/api/problems", problemRoutes);
 
 export default app;

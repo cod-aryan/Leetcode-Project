@@ -153,7 +153,7 @@ export const getUserProfile = async (req, res) => {
 // Update user profile controller
 export const updateUserProfile = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, password } = req.body;
 
     const user = await User.findById(req.user.userId);
     if (!user) {
@@ -162,7 +162,6 @@ export const updateUserProfile = async (req, res) => {
 
     // Update fields if provided
     if (username) user.username = username;
-    if (email) user.email = email;
     if (password) user.password = await bcrypt.hash(password, 10);
 
     await user.save();
