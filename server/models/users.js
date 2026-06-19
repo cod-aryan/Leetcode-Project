@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { problemSchema } from './problems.js';
 
 const userSchema = new mongoose.Schema({
   username: {
