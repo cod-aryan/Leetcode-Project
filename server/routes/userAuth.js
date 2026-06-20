@@ -22,4 +22,8 @@ router.put('/profile', authenticate, updateUserProfile);
 // delete user along with submissions (and problem if user is admin)
 router.delete('/delete', authenticate, deleteUser);
 
+router.get('/get-user', authenticate, (req, res) => {
+  res.status(200).json({ message: 'User is authenticated', user: req.user });
+});
+
 export default router;
