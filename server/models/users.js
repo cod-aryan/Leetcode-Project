@@ -5,11 +5,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    trim: true,
   },
   email: {
     type: String,
     required: true,
     unique: true,
+    lowercase: true,
+    trim: true,
   },
   password: {
     type: String,
@@ -23,6 +26,7 @@ const userSchema = new mongoose.Schema({
   rank: {
     type: Number,
     default: 0,
+    index: true, // Optimized for fast leaderboard sorting
   },
   followers: {
     type: Number,
@@ -32,30 +36,20 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  problemsSolved: {
-    type: Number,
-    default: 0,
-  },
-  easyProblemsSolved: {
-    type: Number,
-    default: 0,
-  },
-  mediumProblemsSolved: {
-    type: Number,
-    default: 0,
-  },
-  hardProblemsSolved: {
-    type: Number,
-    default: 0,
-  },
-  submissions: {
-    type: Number,
-    default: 0,
+  
+  // --- PROBLEM TRACKING METRICS ---
+  // Detailed tracking by problem complexity level
+  solvedCounts: {
+    easy: { type: Number, default: 0 },
+    medium: { type: Number, default: 0 },
+    hard: { type: Number, default: 0 }
   },
   accuracy: {
     type: Number,
     default: 0,
   },
+  
+  // --- ANALYTICS & REWARDS ---
   badgeCount: {
     type: Number,
     default: 0,
@@ -72,13 +66,11 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  country: {
-    type: String,
-    default: '',
-  },
-  city: {
-    type: String,
-    default: '',
+  
+  // --- PROFILE METADATA ---
+  location: {
+    country: { type: String, default: '' },
+    city: { type: String, default: '' },
   },
   socialMediaLinks: {
     type: Map,
@@ -95,6 +87,6 @@ const userSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 export default User;

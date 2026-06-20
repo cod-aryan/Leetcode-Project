@@ -36,6 +36,10 @@ const submissionSchema = new mongoose.Schema({
         type: Number,
         default: null
     },
+    testCasesPassed: {
+        type: Number,
+        default: 0
+    },
     createdAt: {
         type: Date,
         default: Date.now

@@ -10,8 +10,6 @@ export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    console.log("Registering user:", { username, email });
-
     // Validate username
     if (!usernameRegex.test(username)) {
       return res

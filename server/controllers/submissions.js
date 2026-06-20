@@ -51,7 +51,9 @@ export const submitCode = async (req, res) => {
 
     // Stitch the user's code directly inside the creator's wrapper architecture
     const placeholderToken = langKey === "python" ? "# INSERT_USER_CODE" : "// INSERT_USER_CODE";
+
     const executableCode = rawWrapper.replace(placeholderToken, code);
+    const problemDifficulty = problem.difficulty;
 
     const testCases = problem.visibleTestCases.concat(problem.hiddenTestCases);
 
@@ -71,6 +73,7 @@ export const submitCode = async (req, res) => {
     let maxExecutionTime = 0;
 
     const fileName = langKey === "java" ? "Main.java" : `main.${fileExtension}`;
+    let testCasesPassed = 0;
 
     // Grade the submission against test cases sequentially
     for (let i = 0; i < testCases.length; i++) {
@@ -118,12 +121,23 @@ export const submitCode = async (req, res) => {
         finalStatus = "Wrong Answer";
         break;
       }
+      
+      testCasesPassed++;
     }
 
     // Persist finalized operational results
     submission.status = finalStatus;
     submission.outputs = recordedOutputs;
     submission.executionTime = maxExecutionTime;
+    submission.testCasesPassed = testCasesPassed;
+    
+    const noOfSubmissionsForProblem = await Submission.countDocuments({ problemId: problemId, userId: user._id, status: "Accepted" });
+    console.log(noOfSubmissionsForProblem);
+    if (noOfSubmissionsForProblem === 0) {
+      user.solvedCounts[problemDifficulty] += 1;
+      await user.save();
+    }
+    
     await submission.save();
 
     return res.status(200).json({
@@ -131,6 +145,7 @@ export const submitCode = async (req, res) => {
       status: submission.status,
       outputs: submission.outputs,
       executionTime: submission.executionTime,
+      testCasesPassed: submission.testCasesPassed
     });
 
   } catch (error) {
