@@ -45,6 +45,9 @@ const submissionSchema = new mongoose.Schema({
         default: Date.now
     }
 })
+// sort problemId and then userId for faster serching (O(log n) time complexity using binary search)
+submissionSchema.index({ problemId: 1, userId: 1 }); // 1 for ascending order
+submissionSchema.index({ userId: 1, status: 1 }); // 1 for ascending order
 
 const Submission = mongoose.model("Submission", submissionSchema);
 

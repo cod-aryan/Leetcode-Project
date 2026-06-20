@@ -132,7 +132,6 @@ export const submitCode = async (req, res) => {
     submission.testCasesPassed = testCasesPassed;
     
     const noOfSubmissionsForProblem = await Submission.countDocuments({ problemId: problemId, userId: user._id, status: "Accepted" });
-    console.log(noOfSubmissionsForProblem);
     if (noOfSubmissionsForProblem === 0) {
       user.solvedCounts[problemDifficulty] += 1;
       await user.save();
