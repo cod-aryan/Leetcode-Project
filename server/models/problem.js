@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const ProblemSchema = new mongoose.Schema({
+const problemSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -46,15 +46,26 @@ const ProblemSchema = new mongoose.Schema({
       },
     },
   ],
-  startCode: {
-    language: {
-      type: String,
-      required: true,
-    },
-    code: {
-      type: String,
-      required: true,
-    },
+  startCode: [
+    {
+      language: {
+        type: String,
+        required: true,
+      },
+      version: {
+        type: String,
+        default: "latest",
+      },
+      code: {
+        type: String,
+        required: true,
+      },
+    }
+  ],
+  wrapperCode: {
+    type: Map,
+    of: String,
+    default: {},
   },
   problemCreator: {
     type: mongoose.Schema.Types.ObjectId,
@@ -67,6 +78,6 @@ const ProblemSchema = new mongoose.Schema({
   },
 });
 
-const Problem = mongoose.model("Problem", ProblemSchema);
+const Problem = mongoose.models.Problem || mongoose.model("Problem", problemSchema);
 
 export default Problem;

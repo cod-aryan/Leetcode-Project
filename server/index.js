@@ -7,6 +7,7 @@ import { initializeDatabases } from './config/redisClient.js';
 // Routers
 import userAuthRoutes from './routes/userAuth.js';
 import problemRoutes from './routes/problem.js';
+import submissionRoutes from './routes/submissions.js';
 
 const app = express();
 

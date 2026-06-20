@@ -15,7 +15,7 @@ const verifyToken = async (token) => {
   }
 };
 
-const authenticate = async (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   const token = req.cookies.token;
 
   if (!token) {
@@ -44,5 +44,3 @@ const authenticate = async (req, res, next) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-export { authenticate };

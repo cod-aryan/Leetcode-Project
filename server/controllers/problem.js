@@ -1,7 +1,7 @@
 import Problem from "../models/Problem.js";
 
-const createProblem = (req, res) => {
-    const { title, description, difficulty, tags, visibleTestCases, hiddenTestCases, startCode, referenceSolution } = req.body;
+export const createProblem = async (req, res) => {
+    const { title, description, difficulty, tags, visibleTestCases, hiddenTestCases, startCode, wrapperCode } = req.body;
     const problemCreator = req.user._id;
 
     const newProblem = new Problem({
@@ -12,7 +12,7 @@ const createProblem = (req, res) => {
         visibleTestCases,
         hiddenTestCases,
         startCode,
-        referenceSolution,
+        wrapperCode,
         problemCreator,
     });
 
@@ -21,9 +21,9 @@ const createProblem = (req, res) => {
         .catch((error) => res.status(400).json({ error: error.message }));
 };
 
-const updateProblem = (req, res) => {
+export const updateProblem = async (req, res) => {
     const { id } = req.params;
-    const { title, description, difficulty, tags, visibleTestCases, hiddenTestCases, startCode, referenceSolution } = req.body;
+    const { title, description, difficulty, tags, visibleTestCases, hiddenTestCases, startCode, wrapperCode } = req.body;
 
     Problem.findByIdAndUpdate(id, {
         title,
@@ -33,7 +33,7 @@ const updateProblem = (req, res) => {
         visibleTestCases,
         hiddenTestCases,
         startCode,
-        referenceSolution,
+        wrapperCode,
     }, { runValidators: true, new: true })
         .then((problem) => {
             if (!problem) {
@@ -44,7 +44,7 @@ const updateProblem = (req, res) => {
         .catch((error) => res.status(400).json({ error: error.message }));
 };
 
-const deleteProblem = (req, res) => {
+export const deleteProblem = async (req, res) => {
     const { id } = req.params;
 
     Problem.findByIdAndDelete(id)
@@ -57,7 +57,7 @@ const deleteProblem = (req, res) => {
         .catch((error) => res.status(400).json({ error: error.message }));
 };
 
-const getProblem = (req, res) => {
+export const getProblem = async (req, res) => {
     const { id } = req.params;
 
     Problem.findById(id)
@@ -70,7 +70,7 @@ const getProblem = (req, res) => {
         .catch((error) => res.status(400).json({ error: error.message }));
 };
 
-const getAllProblems = (req, res) => {
+export const getAllProblems = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // Default limit to 10
     const page = parseInt(req.query.page) || 1; // Default page to 1
     const skip = (page - 1) * limit;
@@ -79,9 +79,6 @@ const getAllProblems = (req, res) => {
         .catch((error) => res.status(400).json({ error: error.message }));
 };
 
-const getUserProblems = (req, res) => {
+export const getUserProblems = async (req, res) => {
     return res.status(200).json({ message: "This route will return the problems solved by the user." });
 }
-
-
-export { createProblem, updateProblem, deleteProblem, getProblem, getAllProblems, getUserProblems, };
