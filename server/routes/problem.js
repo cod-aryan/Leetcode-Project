@@ -7,7 +7,7 @@ import {
   deleteProblem,
   getProblem,
   getAllProblems,
-  getUserProblems,
+  getUserSolvedProblems,
 } from "../controllers/problem.js";
 import submissionRoutes from "./submissions.js";
 
@@ -19,7 +19,7 @@ router.delete("/delete/:id", authenticate, isAdmin, deleteProblem);
 
 router.get("/get/:id", getProblem);
 router.get("/get-all", getAllProblems);
-router.get("/solved-problems", authenticate, getUserProblems);
+router.get("/solved-problems", authenticate, getUserSolvedProblems);
 
 router.use("/:problemId/submissions", submissionRoutes);
 

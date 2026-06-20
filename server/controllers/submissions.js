@@ -150,3 +150,33 @@ export const submitCode = async (req, res) => {
     return res.status(statusCode).json({ message: errorMsg });
   }
 };
+
+
+export const getAllSubmissions = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const problemId = req.params.problemId;
+
+    const submissions = await Submission.find({ userId, problemId }).sort({ createdAt: -1 });
+
+    return res.status(200).json(submissions);
+  } catch (error) {
+    console.error("Failed to retrieve submissions:", error);
+    return res.status(500).json({ message: "Failed to retrieve submissions." });
+  }
+};
+
+
+export const getSubmissionDetail = async (req, res) => {
+  try {
+    const submissionId = req.params.id;
+
+    const submission = await Submission.findById(submissionId);
+    if (!submission) return res.status(404).json({ message: "Submission not found" });
+
+    return res.status(200).json(submission);
+  } catch (error) {
+    console.error("Failed to retrieve submission detail:", error);
+    return res.status(500).json({ message: "Failed to retrieve submission detail." });
+  }
+};
