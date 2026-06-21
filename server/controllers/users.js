@@ -52,9 +52,12 @@ export const register = async (req, res) => {
       maxAge: 30 * 24 * 60 * 60 * 1000, // Cookie expiration in milliseconds (e.g., 30 day)
     });
 
+    // removing password from the user object before sending it in the response
+    const userResponse = {...user, password: undefined};
+
     return res.status(201).json({
       message: "Register successfully",
-      user: { id: newUser._id, email: newUser.email },
+      user: userResponse,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -90,9 +93,12 @@ export const login = async (req, res) => {
       maxAge: 30 * 24 * 60 * 60 * 1000, // Cookie expiration in milliseconds (e.g., 30 day)
     });
 
+    // removing password from the user object before sending it in the response
+    user.password = undefined;
+
     return res.status(200).json({
       message: "Logged in successfully",
-      user: { id: user._id, email: user.email },
+      user: user,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
