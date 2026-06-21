@@ -9,7 +9,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ThemeProvider>
       <AuthProvider>
-        <App className="bg-[#393939]" />
+        <App />
       </AuthProvider>
     </ThemeProvider>
   </StrictMode>,

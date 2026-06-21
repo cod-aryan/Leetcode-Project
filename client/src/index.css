@@ -1,4 +1,16 @@
 @import "tailwindcss";
 
-/* for dark mode */
-@variant dark (&:where(.dark, .dark *));
+/* for light mode */
+@variant light (&:where(.light, .light *));
+
+
+body {
+    background-color: #393939; 
+    color: #ffffff;
+    transition: background-color 0.3s ease; /* smooth fading transitions */
+}
+
+html.light body {
+    background-color: #ffffff;
+    color: #000000;
+}

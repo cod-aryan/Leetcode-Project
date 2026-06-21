@@ -23,3 +23,4 @@
     c) useFrom and zod - react-hook-form
 5) Light & Dark modes
 6) useLocation in react-router-dom, it is equivalent to window.location
+7) lucide-react is used for icons
