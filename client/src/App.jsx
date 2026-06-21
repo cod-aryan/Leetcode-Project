@@ -3,6 +3,7 @@ import Home from "./pages/Home.jsx";
 import "./App.css";
 import Auth from "./pages/Auth.jsx";
 import Navbar from "./components/Navbar.jsx";
+import Logout from "./components/Logout.jsx";
 
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/logout" element={<Logout />} />
       </Routes>
     </BrowserRouter>
   );
