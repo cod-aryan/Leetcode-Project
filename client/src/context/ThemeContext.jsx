@@ -5,17 +5,17 @@ const ThemeContext = createContext(null);
 export const ThemeProvider = ({ children }) => {
   // Check localStorage for an existing preference, default to light mode
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("theme") || "light";
+    return localStorage.getItem("theme") || "dark";
   });
 
   useEffect(() => {
     const root = window.document.documentElement; // Targets the <html> element
 
     // Apply or remove the .dark class based on state changes
-    if (theme === "dark") {
-      root.classList.add("dark");
+    if (theme === "light") {
+      root.classList.add("light");
     } else {
-      root.classList.remove("dark");
+      root.classList.remove("light");
     }
 
     // Remember the user's setting across refreshes
@@ -23,7 +23,7 @@ export const ThemeProvider = ({ children }) => {
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
   return (
