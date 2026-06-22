@@ -44,3 +44,15 @@
 9) To make changes to docker-compose:- docker compose up
 10) To stop all containers of docker-compose:- docker compose down
 11) To check logs:- docker compose logs -f
+12) To check status of running containers:- docker ps
+13) To check status of all containers (Running + Stopped):- docker ps -a
+
+
+## Nginx (Reverse Proxy Server)
+A standard proxy helps a client hide its identity from a server (like a VPN). A Reverse Proxy does the opposite: it stands in front of your backend servers and hides their identity from the client web browser.
+
+(Instead of clients directly knocking on your Express app, your MongoDB database, or your Python services, they talk only to Nginx on Port 80/443. Nginx intercepts the requests and hands them off internally to the correct container.)
+
+⚖️ The Load Balancer:
+If your LeetCode platform suddenly goes viral and gets thousands of concurrent users submitting code, a single Express container might crash under the pressure.
+With Nginx, you can spin up 3 identical instances of your backend container. Nginx will sit at the front gate, taking incoming traffic and distributing it evenly across your backend containers so no single server gets overwhelmed.

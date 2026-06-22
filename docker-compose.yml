@@ -1,26 +1,32 @@
 version: '3.8'
 
 services:
-  # 1. Your Express Backend Service
-  backend:
-    build: ./server            # Points to your server folder containing its Dockerfile
-    container_name: leetcode-backend
+  # The Reverse Proxy Service
+  nginx:
+    image: nginx:alpine
+    container_name: leetcode-proxy
     ports:
-      - "3000:3000"            # Maps backend port 3000 to your Mac
-    env_file:
-      - ./server/.env         # Automatically injects your database credentials and secrets
+      - "80:80"                  # Maps port 80 of your Mac to Nginx
     volumes:
-      - ./server:/usr/src/app  # Hot-reloading: Syncs backend code changes live into the container
-      - /usr/src/app/node_modules # Safety rule: Don't let local node_modules overwrite container packages
-
-  # 2. Your React Frontend Service
-  frontend:
-    build: ./client            # Points to your client/frontend folder containing its Dockerfile
-    container_name: leetcode-frontend
-    ports:
-      - "5173:5173"            # Maps Vite's port 5173 to your Mac
-    volumes:
-      - ./client:/usr/src/app  # Hot-reloading: Syncs frontend edits instantly to your browser
-      - /usr/src/app/node_modules
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Mounts your config file as Read-Only
     depends_on:
-      - backend                # Tells Docker to wait and boot up the backend first
+      - frontend
+      - backend
+
+  backend:
+    build: ./server
+    container_name: leetcode-backend
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+    # NO PORTS EXPOSED TO THE MAC
+
+  frontend:
+    build: ./client
+    container_name: leetcode-frontend
+    volumes:
+      - ./client:/usr/src/app
+      - /usr/src/app/node_modules
+    # NO PORTS EXPOSED TO THE MAC
