@@ -8,6 +8,7 @@
 5) How to make customized field in schema - In problem schema, like visibleTestCases or hiddenTestCases.
 6) How to use redis for storing logout jwt tokens.
 7) Ordering of imports - we should have to import 'dotenv/config' first.
+8) Using Glot IO for submitting problems to verify the code written by the user to get result on the basis of given input and expected output (we can also use JudgeO but Glot IO is free)
 
 
 ## Frontend - Learning
@@ -24,3 +25,5 @@
 5) Light & Dark modes
 6) useLocation in react-router-dom, it is equivalent to window.location
 7) lucide-react is used for icons
+8) Monaco editor is used to create editor like in VS Code
+9) Use Cloudinary to upload videos/images or any content files

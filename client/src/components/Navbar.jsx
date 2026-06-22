@@ -5,9 +5,6 @@ import { Sun, Moon } from "lucide-react";
 
 const tabs = [
   { name: "Problems", path: "/" },
-  { name: "Contest", path: "/contest" },
-  { name: "Discuss", path: "/discuss" },
-  { name: "Interview", path: "/interview" },
 ];
 
 const Navbar = () => {
@@ -20,7 +17,7 @@ const Navbar = () => {
 
   return (
     /* 🎨 Navbar background defaults dark, transitions to soft gray on light mode */
-    <nav className="sticky top-0 z-50 items-center px-6 shadow-md w-full bg-[#282828] light:bg-zinc-100 border-b border-zinc-800 light:border-zinc-200 transition-colors duration-300">
+    <nav className="sticky top-0 z-50 px-6 shadow-md w-full bg-[#282828] light:bg-white border-b border-zinc-800 light:border-zinc-200 transition-colors duration-300">
       <div className="flex items-center px-6 h-12.5 m-auto text-zinc-400 light:text-zinc-500 font-medium">
         
         {/* Logo Text */}

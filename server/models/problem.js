@@ -9,6 +9,10 @@ const problemSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  constraints:{
+    type: String,
+    required: false,
+  },
   difficulty: {
     type: String,
     enum: ["easy", "medium", "hard"],
