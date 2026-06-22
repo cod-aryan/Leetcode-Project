@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3000
 
 # Step 7: Define the command that starts your server inside the box
-CMD ["node", "server.js"]
+CMD ["npm", "run", "dev"]

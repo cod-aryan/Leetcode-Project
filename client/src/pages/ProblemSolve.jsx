@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { Play, Send, BookOpen, ChevronDown, Loader2 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import axiosClient from "../utils/axiosClient";
+import { useAuth } from "../context/AuthContext";
 
 const SUPPORTED_LANGUAGES = [
   { id: "cpp", name: "C++" },
@@ -15,6 +16,8 @@ const SUPPORTED_LANGUAGES = [
 export default function ProblemSolve() {
   const { id } = useParams();
   const { theme } = useTheme();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,7 +25,7 @@ export default function ProblemSolve() {
 
   // Workspace States
   const [activeLang, setActiveLang] = useState(SUPPORTED_LANGUAGES[0]);
-  const [consoleOutput, setConsoleOutput] = useState("");
+  const [consoleOutput, setConsoleOutput] = useState(null); // Now stores the actual JSON object/response data
 
   const codeCacheRef = useRef({});
 
@@ -60,16 +63,28 @@ export default function ProblemSolve() {
     fetchProblem();
   }, [id]);
 
-  // 🚀 OPTIMIZATION: Directly update the ref on change (0ms React render overhead)
+  // Update the ref on change (0ms React render overhead)
   const handleEditorChange = (value) => {
     codeCacheRef.current[activeLang.id] = value || "";
   };
 
   const handleExecutionRoute = async (actionType) => {
+    if (!user) {
+      const confirmed = window.confirm(
+        "Please log in to submit your solution.",
+      );
+      if (!confirmed) return;
+      return navigate("/auth#login", { state: { from: `/problems/${id}` } });
+    }
     if (isProcessing) return;
+
     try {
       setIsProcessing(true);
-      setConsoleOutput("Judging... Please wait.");
+      // Put placeholder status while judging
+      setConsoleOutput({
+        isSystemStatus: true,
+        text: "Judging... Please wait.",
+      });
 
       const res = await axiosClient.post(`/problems/${id}/submissions`, {
         language_name: activeLang.id,
@@ -78,19 +93,19 @@ export default function ProblemSolve() {
       });
 
       if (res.status === 200) {
-        const passed = res.data.testCasesPassed ?? 0;
-        const outputsArray = res.data.outputs || [];
-        const total = res.data.totalTestCases || outputsArray.length || "N/A";
-
-        setConsoleOutput(
-          `Submission Result:\nStatus: ${res.data.status}\nRuntime: ${res.data.executionTime ?? 0}ms\nTest Cases Passed: ${passed}/${total}`,
-        );
+        // Direct response object assignment so our engine can parse out statuses elegantly
+        setConsoleOutput(res.data);
       }
     } catch (err) {
       console.error(`Failed to process execution action (${actionType}):`, err);
       const serverErrorMsg =
         err.response?.data?.message || "An error occurred during evaluation.";
-      setConsoleOutput(`Execution Error:\n${serverErrorMsg}`);
+
+      setConsoleOutput({
+        isSystemStatus: true,
+        isError: true,
+        text: `Execution Error:\n${serverErrorMsg}`,
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -175,7 +190,6 @@ export default function ProblemSolve() {
             ))}
           </div>
 
-          {/* Dynamic Constraints UI Layout block */}
           {problem.constraints && (
             <div className="space-y-2 pt-2 border-t border-zinc-800 light:border-zinc-200">
               <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 select-none">
@@ -241,27 +255,206 @@ export default function ProblemSolve() {
           />
         </div>
 
-        {/* Console Output Block */}
-        {consoleOutput && (
-          <div className="h-48 border-t border-zinc-700/60 bg-[#1e1e1e] p-4 font-mono text-xs text-zinc-300 overflow-y-auto light:bg-zinc-50 light:border-zinc-200 light:text-zinc-800 transition-colors duration-200">
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-800 light:border-zinc-200 select-none">
-              <span className="text-zinc-500 font-bold uppercase tracking-wider light:text-zinc-400">
-                Console Output
-              </span>
-              <button
-                type="button"
-                onClick={() => setConsoleOutput("")}
-                className="text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer p-0.5 rounded-sm focus:outline-none focus:ring-1 focus:ring-zinc-700 light:text-zinc-400 light:hover:text-zinc-600 light:focus:ring-zinc-300"
-                aria-label="Clear console output"
-              >
-                ✕
-              </button>
-            </div>
-            <pre className="whitespace-pre-wrap break-all text-zinc-200 light:text-zinc-700 selection:bg-amber-500/30">
-              <code>{consoleOutput}</code>
-            </pre>
-          </div>
-        )}
+        {/* 🚀 OPTIMIZED CONSOLE UI COMPONENT */}
+        {consoleOutput &&
+          (() => {
+            let data = consoleOutput;
+            if (typeof consoleOutput === "string") {
+              try {
+                data = JSON.parse(consoleOutput);
+              } catch (e) {
+                data = null;
+              }
+            }
+
+            // Handle plaintext processing messages or raw runtime errors cleanly
+            if (!data || data.isSystemStatus) {
+              return (
+                <div className="h-56 border-t border-zinc-800 bg-[#121214] p-4 font-mono text-xs text-zinc-300 overflow-y-auto light:bg-zinc-50 light:border-zinc-200 light:text-zinc-800 transition-colors duration-200">
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-800 light:border-zinc-200 select-none">
+                    <span className="text-zinc-500 font-bold uppercase tracking-wider">
+                      Console Output
+                    </span>
+                    <button
+                      onClick={() => setConsoleOutput(null)}
+                      className="text-zinc-500 hover:text-zinc-300 cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <pre
+                    className={`whitespace-pre-wrap break-all ${data?.isError ? "text-rose-400" : "text-zinc-400"}`}
+                  >
+                    <code>{data ? data.text : String(consoleOutput)}</code>
+                  </pre>
+                </div>
+              );
+            }
+
+            const isAccepted = data.status === "Accepted";
+            const passedCount = data.testCasesPassed ?? 0;
+            const totalCount = data.totalTestCases ?? data.outputs?.length ?? 0;
+            const runOrSubmitText =
+              data.runOrSubmit === "submit" ? "Submit" : "Run";
+
+            return (
+              <div className="h-64 border-t border-zinc-800 bg-[#121214] font-mono text-xs text-zinc-300 overflow-y-auto light:bg-zinc-50 light:border-zinc-200 light:text-zinc-800 transition-colors duration-200 flex flex-col">
+                {/* Sticky Meta Header */}
+                <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-[#1a1a1e] light:bg-zinc-100 light:border-zinc-200 sticky top-0 z-10 select-none">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`font-bold text-sm ${isAccepted ? "text-emerald-400" : "text-rose-400 light:text-rose-600"}`}
+                    >
+                      {data.status || "Evaluated"}
+                    </span>
+                    <span className="text-zinc-700 light:text-zinc-300">|</span>
+                    <span className="text-zinc-400 text-[11px] font-semibold light:text-zinc-600">
+                      Passed:{" "}
+                      <span
+                        className={
+                          isAccepted
+                            ? "text-emerald-400"
+                            : "text-zinc-200 light:text-zinc-800"
+                        }
+                      >
+                        {passedCount}
+                      </span>
+                      /{totalCount}
+                    </span>
+                    {data.executionTime !== undefined && (
+                      <>
+                        <span className="text-zinc-700 light:text-zinc-300">
+                          |
+                        </span>
+                        <span className="text-zinc-500 text-[11px] light:text-zinc-400">
+                          Runtime:{" "}
+                          <span className="text-amber-400/90 font-medium light:text-amber-600">
+                            {data.executionTime}ms
+                          </span>
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setConsoleOutput(null)}
+                    className="text-zinc-500 hover:text-zinc-300 p-0.5 rounded hover:bg-zinc-800 light:hover:bg-zinc-200 light:text-zinc-400"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Layout Content Body */}
+                <div className="p-4 space-y-4 flex-1 bg-[#121214] light:bg-zinc-50">
+                  {/* Banner Announcement */}
+                  <div
+                    className={`p-3 rounded border text-[13px] ${
+                      isAccepted
+                        ? "bg-emerald-950/20 border-emerald-800/40 text-emerald-300 light:bg-emerald-50 light:border-emerald-200 light:text-emerald-700"
+                        : "bg-rose-950/20 border-rose-800/40 text-rose-300 light:bg-rose-50 light:border-rose-200 light:text-rose-700"
+                    }`}
+                  >
+                    {data.message}
+                  </div>
+
+                  {/* Condition Panel: Render explicit breakdown cards if a testcase failed */}
+
+                  {data.testCaseNotPassed && (
+                    <div className="rounded border border-zinc-800 bg-[#18181c] overflow-hidden light:bg-white light:border-zinc-200">
+                      <div className="bg-rose-950/30 border-b border-zinc-800 px-3 py-1.5 text-rose-400 font-bold text-[11px] uppercase tracking-wider light:bg-rose-50 light:border-zinc-200 light:text-rose-600">
+                        Failed Test Case Details
+                      </div>
+                      <div className="p-3 space-y-3 font-mono text-xs">
+                        <div>
+                          <span className="text-zinc-500 block text-[10px] uppercase font-bold mb-0.5 light:text-zinc-400">
+                            Input Parameters:
+                          </span>
+                          <pre className="bg-[#222226] p-2 rounded text-amber-200/90 overflow-x-auto whitespace-pre-wrap light:bg-zinc-100 light:text-zinc-800">
+                            {typeof data.testCaseNotPassed.input === "object"
+                              ? JSON.stringify(
+                                  data.testCaseNotPassed.input,
+                                  null,
+                                  2,
+                                )
+                              : String(
+                                  data.testCaseNotPassed.input ||
+                                    data.testCaseNotPassed,
+                                )}
+                          </pre>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <span className="text-zinc-500 block text-[10px] uppercase font-bold mb-0.5 light:text-zinc-400">
+                              Expected Output:
+                            </span>
+                            <pre className="bg-emerald-950/10 border border-emerald-900/30 p-2 rounded text-emerald-400 overflow-x-auto light:bg-emerald-50/50 light:border-emerald-200 light:text-emerald-600">
+                              {String(
+                                data.testCaseNotPassed.expectedOutput || "N/A",
+                              )}
+                            </pre>
+                          </div>
+                          <div>
+                            <span className="text-zinc-500 block text-[10px] uppercase font-bold mb-0.5 light:text-zinc-400">
+                              Your Actual Output:
+                            </span>
+                            <pre className="bg-rose-950/10 border border-rose-900/30 p-2 rounded text-rose-400 overflow-x-auto light:bg-rose-50/50 light:border-rose-200 light:text-rose-600">
+                              {data.outputs &&
+                              data.outputs[passedCount] !== undefined
+                                ? String(data.outputs[passedCount])
+                                : "No output / Runtime Error"}
+                            </pre>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Condition Panel: Success / Informational Outputs */}
+                  {/* Condition Panel: Success Outputs Grid */}
+                  {isAccepted &&
+                    data.outputs &&
+                    data.outputs.length > 0 &&
+                    runOrSubmitText === "Run" && (
+                      <div>
+                        <span className="text-zinc-500 block text-[10px] uppercase font-bold mb-1.5 tracking-wide light:text-zinc-400">
+                          Recorded Execution Outputs:
+                        </span>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                          {data.outputs.map((out, idx) => (
+                            <div
+                              key={idx}
+                              className="bg-[#18181c] border border-zinc-800 p-2 rounded flex flex-col justify-between light:bg-white light:border-zinc-200"
+                            >
+                              <span className="text-[9px] text-zinc-600 block font-bold light:text-zinc-400">
+                                CASE {idx + 1}
+                              </span>
+                              <span
+                                className="text-emerald-400 font-medium truncate mt-0.5 light:text-emerald-600"
+                                title={String(out)}
+                              >
+                                {String(out)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  {isAccepted && runOrSubmitText === "Submit" && (
+                    <div className="text-zinc-400 text-xs font-mono py-1">
+                      <span className="text-zinc-500 block text-[10px] uppercase font-bold mb-1 tracking-wide light:text-zinc-400">
+                        Execution Summary:
+                      </span>
+                      <p className="text-zinc-300 light:text-zinc-600">
+                        All test cases passed successfully. Your solution is
+                        optimized and accepted.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
 
         {/* Action Controls Footer */}
         <div className="flex items-center justify-end gap-3 px-4 h-14 border-t border-zinc-700/60 bg-[#252526] light:bg-zinc-100 light:border-zinc-200">

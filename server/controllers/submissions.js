@@ -93,6 +93,9 @@ export const submitCode = async (req, res) => {
     const fileName = langKey === "java" ? "Main.java" : `main.${fileExtension}`;
     let testCasesPassed = 0;
 
+    let normalizedOutput = "";
+    let normalizedExpected = "";
+
     // Grade the submission against test cases sequentially
     for (let i = 0; i < testCases.length; i++) {
       const testCase = testCases[i];
@@ -153,8 +156,8 @@ export const submitCode = async (req, res) => {
       recordedOutputs.push(cleanOutput);
 
       // Standardize Windows line breaks (\r\n vs \n) to ensure cross-platform evaluation consistency
-      const normalizedOutput = cleanOutput.replace(/\r\n/g, "\n").trim();
-      const normalizedExpected = testCase.output.replace(/\r\n/g, "\n").trim();
+      normalizedOutput = cleanOutput.replace(/\r\n/g, "\n").trim();
+      normalizedExpected = testCase.output.replace(/\r\n/g, "\n").trim();
 
       // Optimize grading cycle with an early exit if evaluation fails
       if (normalizedOutput !== normalizedExpected) {
@@ -186,6 +189,10 @@ export const submitCode = async (req, res) => {
       }
     }
 
+    const testCaseNotPassed =
+      testCasesPassed < testCases.length ? {input: testCases[testCasesPassed].input, output: normalizedOutput, expectedOutput: normalizedExpected} : null;
+
+    if (testCaseNotPassed) testCaseNotPassed["expectedOutput"] = normalizedExpected;
 
     return res.status(200).json({
       message: "Submission evaluated successfully",
@@ -194,6 +201,8 @@ export const submitCode = async (req, res) => {
       executionTime: maxExecutionTime,
       testCasesPassed: testCasesPassed,
       totalTestCases: testCases.length,
+      testCaseNotPassed: testCaseNotPassed,
+      runOrSubmit: runOrSubmit,
     });
   } catch (error) {
     console.error("Critical submission workflow failure:", error);
