@@ -27,3 +27,20 @@
 7) lucide-react is used for icons
 8) Monaco editor is used to create editor like in VS Code
 9) Use Cloudinary to upload videos/images or any content files
+
+
+## Docker - Learning
+1) Creating image:- docker build -t my-mern-backend:v1 .
+2) Creating container:- docker run -d -p 3000:3000 --name leetcode-api-container --env-file .env leetcode-project:v1
+    -d:- to run in backend
+    -p:- to map ports from container to machine or system
+    --env-file .env:- to run container with environment variables inside .env file
+3) To stop container:- docker stop leetcode-api-container
+4) To check logs:- docker logs -f leetcode-api-container
+5) To remove container:- docker rm -f leetcode-api-container
+6) To remove image:- docker rmi my-mern-backend:v1 OR docker rmi c8392a1cf4b
+7) To safely wipe out all stopped containers, unused networks, and dangling build caches:- docker system prune -a --volumes
+8) To build all containers inside docker-compose:- docker compose up --build
+9) To make changes to docker-compose:- docker compose up
+10) To stop all containers of docker-compose:- docker compose down
+11) To check logs:- docker compose logs -f

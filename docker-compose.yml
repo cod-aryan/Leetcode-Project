@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  # 1. Your Express Backend Service
+  backend:
+    build: ./server            # Points to your server folder containing its Dockerfile
+    container_name: leetcode-backend
+    ports:
+      - "3000:3000"            # Maps backend port 3000 to your Mac
+    env_file:
+      - ./server/.env         # Automatically injects your database credentials and secrets
+    volumes:
+      - ./server:/usr/src/app  # Hot-reloading: Syncs backend code changes live into the container
+      - /usr/src/app/node_modules # Safety rule: Don't let local node_modules overwrite container packages
+
+  # 2. Your React Frontend Service
+  frontend:
+    build: ./client            # Points to your client/frontend folder containing its Dockerfile
+    container_name: leetcode-frontend
+    ports:
+      - "5173:5173"            # Maps Vite's port 5173 to your Mac
+    volumes:
+      - ./client:/usr/src/app  # Hot-reloading: Syncs frontend edits instantly to your browser
+      - /usr/src/app/node_modules
+    depends_on:
+      - backend                # Tells Docker to wait and boot up the backend first
