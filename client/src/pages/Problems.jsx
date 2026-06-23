@@ -39,7 +39,7 @@ const Problems = () => {
       <div className="max-w-6xl m-auto space-y-6">
 
         {/* 🏷️ SECTION 1: Horizontal Topic Badges Container */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none select-none text-xs">
+        {/* <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none select-none text-xs">
           {topicTags.map((tag) => (
             <button
               key={tag.name}
@@ -49,12 +49,12 @@ const Problems = () => {
               <span className="text-zinc-500 font-mono text-[11px]">{tag.count}</span>
             </button>
           ))}
-        </div>
+        </div> */}
 
 
 
         {/* 🔍 SECTION 3: Filter controls toolbar banner row layout */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-2">
+        {/* <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-2">
           <div className="flex items-center gap-2 flex-1 max-w-md relative">
             <Search className="w-4 h-4 text-zinc-500 absolute left-3 pointer-events-none" />
             <input
@@ -71,7 +71,7 @@ const Problems = () => {
             <button className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 cursor-pointer light:bg-zinc-200 light:text-zinc-700"><SlidersHorizontal className="w-4 h-4" /></button>
             <span className="text-xs font-medium ml-2 font-mono text-zinc-500">0/3972 Solved</span>
           </div>
-        </div>
+        </div> */}
 
         {/* 📊 SECTION 4: List Table Stack Container Viewport */}
         <div className="w-full space-y-[2px] pt-2">
