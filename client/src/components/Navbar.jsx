@@ -77,14 +77,14 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link
+                {/* <Link
                   to="/profile"
                   className={`h-full flex items-center justify-center transition-colors duration-200 hover:text-zinc-100 light:hover:text-zinc-900 ${
                     currentPath === "/profile" ? "text-zinc-100 light:text-zinc-900 font-bold" : ""
                   }`}
                 >
                   Profile
-                </Link>
+                </Link> */}
                 <Link
                   to="/logout"
                   className="h-full flex items-center justify-center text-red-400 hover:text-red-500 light:text-red-600 light:hover:text-red-700 font-bold transition-colors"

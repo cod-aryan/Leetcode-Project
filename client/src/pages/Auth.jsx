@@ -5,7 +5,7 @@ import * as z from "zod";
 import axiosClient from "../utils/axiosClient";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext"; // 🚀 Imported your theme context hook
+import { useTheme } from "../context/ThemeContext";
 
 // Define the Zod Validation Schema
 const authSchema = z.object({
@@ -14,15 +14,18 @@ const authSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string().optional(),
-}).superRefine(({ password, confirmPassword, isSignup }, ctx) => {
-  if (isSignup && confirmPassword !== password) {
+}).superRefine((data, ctx) => {
+  // Check confirm password only if signing up
+  if (data.isSignup && data.confirmPassword !== data.password) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: "Passwords do not match",
       path: ["confirmPassword"],
     });
   }
-  if (isSignup && (!ctx.parent?.username || ctx.parent.username.trim() === "")) {
+  
+  // Check username only if signing up
+  if (data.isSignup && (!data.username || data.username.trim() === "")) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: "Username is required for registration",
@@ -35,7 +38,7 @@ const Auth = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, setUser, loading } = useAuth();
-  const { theme } = useTheme(); // Consuming string state token ('light' or 'dark')
+  const { theme } = useTheme(); 
 
   const initialIsSignup = location.hash === "#signup";
   const [isSignup, setIsSignup] = useState(initialIsSignup);
@@ -61,31 +64,29 @@ const Auth = () => {
 
   // Watch URL hashes to swap components state seamlessly
   useEffect(() => {
-    if (location.hash === "#signup") {
-      setIsSignup(true);
-      setValue("isSignup", true);
-    } else {
-      setIsSignup(false);
-      setValue("isSignup", false);
-    }
+    const isNowSignup = location.hash === "#signup";
+    setIsSignup(isNowSignup);
+    setValue("isSignup", isNowSignup);
   }, [location.hash, setValue]);
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-zinc-100 light:text-zinc-800">Loading...</div>;
   }
 
+  // Fallback redirect if user is already populated
   if (user) return <Navigate to="/" replace />;
 
   // Form Submit Handler
   const onSubmit = async (data) => {
     try {
       setApiError(""); 
-      console.log("Validated Form Data:", data);
       
-      const res = await axiosClient.post(isSignup ? "/users/signup" : "/users/login", data);
+      const res = await axiosClient.post(isSignup ? "/users/register" : "/users/login", data);
       
       if (res.status === 200 || res.status === 201) {
         setUser(res.data.user);
+        // Explicitly redirect immediately upon successful API resolution
+        navigate("/", { replace: true });
       }
     } catch (err) {
       console.error("Auth server error:", err);
@@ -96,15 +97,23 @@ const Auth = () => {
   const toggleMode = () => {
     const nextMode = !isSignup;
     setIsSignup(nextMode);
-    reset();
+    
+    // Explicitly reset the form with the correct boolean flag so Zod validates properly
+    reset({
+      isSignup: nextMode,
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    });
+    
     navigate(nextMode ? "/auth#signup" : "/auth#login", { replace: true });
-    setValue("isSignup", nextMode); 
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8 transition-colors duration-300">
       
-      {/* 🎨 Card layout defaults to dark zinc styling, shifts cleanly to white on light mode */}
+      {/* Card layout defaults to dark zinc styling, shifts cleanly to white on light mode */}
       <div className="w-full max-w-md space-y-8 rounded-2xl bg-zinc-800 p-8 shadow-2xl border border-zinc-700/50 light:bg-white light:border-zinc-100 light:shadow-xl transition-colors duration-300">
         <div>
           <h2 className="text-center text-3xl font-extrabold tracking-tight text-zinc-100 light:text-zinc-900">

@@ -53,7 +53,7 @@ export const register = async (req, res) => {
     });
 
     // removing password from the user object before sending it in the response
-    const userResponse = {...user, password: undefined};
+    const userResponse = {...newUser, password: undefined};
 
     return res.status(201).json({
       message: "Register successfully",
