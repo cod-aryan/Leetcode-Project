@@ -1,0 +1,22 @@
+services:
+  server:
+    build: ./server
+    container_name: leetcode-server
+    env_file:
+      - ./server/.env
+    networks:
+      - global-web-network
+    restart: always
+
+  client:
+    build: ./client
+    container_name: leetcode-client
+    depends_on:
+      - server
+    networks:
+      - global-web-network
+    restart: always
+
+networks:
+  global-web-network:
+    external: true
