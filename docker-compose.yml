@@ -1,32 +1,26 @@
 version: '3.8'
 
 services:
-  # The Reverse Proxy Service
-  nginx:
-    image: nginx:alpine
-    container_name: leetcode-proxy
-    ports:
-      - "80:80"                  # Maps port 80 of your Mac to Nginx
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Mounts your config file as Read-Only
-    depends_on:
-      - frontend
-      - backend
-
-  backend:
+  server:
     build: ./server
-    container_name: leetcode-backend
+    container_name: leetcode-server
     env_file:
       - ./server/.env
     volumes:
       - ./server:/usr/src/app
       - /usr/src/app/node_modules
-    # NO PORTS EXPOSED TO THE MAC
+    networks:
+      - global-web-network
 
-  frontend:
+  client:
     build: ./client
-    container_name: leetcode-frontend
+    container_name: leetcode-client
     volumes:
       - ./client:/usr/src/app
       - /usr/src/app/node_modules
-    # NO PORTS EXPOSED TO THE MAC
+    networks:
+      - global-web-network
+
+networks:
+  global-web-network:
+    external: true # Tells docker this network was created manually outside
