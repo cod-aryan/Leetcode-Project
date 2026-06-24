@@ -2,13 +2,13 @@
 FROM node:20-alpine
 
 # Step 2: Create a directory inside the container for our app code
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Step 3: Copy package files first to leverage Docker's caching mechanism
 COPY package*.json ./
 
 # Step 4: Install your project modules inside the container
-RUN npm install
+RUN npm ci --only=production
 
 # Step 5: Copy the rest of your application code
 COPY . .
